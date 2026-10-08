@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>露营物资助手 - 露营聚会多人协作选品</title>
+  <!-- 引入 Google Fonts 与现代字体支持 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- 网站与移动端应用图标 Favicon & App Icon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#10B981">
+  <link rel="stylesheet" href="/css/style.css?v=3.6">
+</head>
+<body>
+  <!-- 桌面端预览容器：在电脑上呈现逼真手机视窗，在手机上自动100%全屏 -->
+  <div class="app-viewport-wrapper">
+    <div id="app" class="mobile-device-shell">
+      
+      <!-- 1. 顶部全局应用栏 -->
+      <header class="app-header">
+        <div class="header-top">
+          <div class="brand-title">
+            <img src="/favicon.svg" class="brand-logo-img" alt="露营物资助手" width="26" height="26">
+            <h1>露营物资助手</h1>
+            <span id="syncStatusBadge" class="sync-status-badge connecting" title="实时协同状态">
+              <span class="pulse-dot"></span>
+              <span class="sync-text">实时连接中</span>
+            </span>
+          </div>
+          <div class="header-actions">
+            <button id="btnSwitchRoom" class="room-pill-btn" title="点击切换或新建活动">
+              <span id="currentRoomCode" class="room-pill-text">邀请码：893215</span>
+            </button>
+            <button id="btnRefresh" class="icon-btn" title="手动刷新">
+              🔄
+            </button>
+          </div>
+        </div>
+        
+        <div class="header-subbar">
+          <div class="current-activity-info">
+            <span class="label">当前活动:</span>
+            <span id="currentRoomTitle" class="activity-name">仙居山谷周末露营</span>
+          </div>
+          <button id="btnOpenShareModal" class="copy-invite-btn" title="点击生成专属邀请链接与分享卡片">
+            📤 邀请好友
+          </button>
+        </div>
+
+        <!-- 实时好友动态浮层横幅 (当好友在另一台手机操作时优雅滑出) -->
+        <div id="liveNoticeBanner" class="live-notice-banner hidden">
+          <span class="live-notice-icon">⚡</span>
+          <span id="liveNoticeText" class="live-notice-text">大山 刚刚添加了物资</span>
+        </div>
+      </header>
+
+      <!-- 2. 主体视图区域 (由底部 Tab 驱动切换) -->
+      <main id="mainContainer" class="main-content">
+        
+        <!-- Tab 1: 首页 (协同工作台，严格按照手绘原型) -->
+        <section id="viewHome" class="tab-view active">
+          <!-- 归档只读提示横幅 (归档时显示) -->
+          <div id="archivedNoticeBanner" class="archived-notice-banner hidden">
+            <span>📦 该活动已归档（只读模式），禁止添加、修改或删除物资</span>
+          </div>
+
+          <!-- 上半区：我的清单 + 其他人清单 (左右对照) -->
+          <div class="upper-split-section">
+            
+            <!-- 左侧：我的清单 (上下滑动) -->
+            <div class="my-list-column" id="myListColumn">
+              <div class="column-header my-header" id="myColHeader">
+                <div class="col-title-wrap" id="myColTitleWrap">
+                  <span class="user-avatar-dot" id="myAvatarDot"></span>
+                  <span class="col-title" id="myColTitle" title="点击修改专属昵称">我的清单</span>
+                  <span class="me-tag" id="myMeTag">我</span>
+                  <button id="btnEditRoomNickname" class="btn-inline-edit" title="修改本活动专属昵称">✏️</button>
+                </div>
+                <span id="myCountBadge" class="count-pill">0</span>
+              </div>
+
+              <!-- 我的清单列表 (垂直滚动) -->
+              <div id="myItemsList" class="items-scroll-box my-items-box">
+                <!-- 动态渲染我的物资卡片 -->
+              </div>
+
+              <!-- 快捷新增输入条 -->
+              <div class="my-quick-add-bar">
+                <input type="text" id="inputQuickAdd" placeholder="+ 添加物资..." maxlength="20">
+                <button id="btnAddQuickItem" class="btn-quick-add" title="添加">＋</button>
+              </div>
+            </div>
+
+            <!-- 右侧：其他人清单 (横向滚动卡片列) -->
+            <div class="others-list-container">
+              <div class="others-scroll-header">
+                <div class="others-title-wrap">
+                  <span class="col-title">其他人清单</span>
+                  <span id="othersCountBadge" class="others-count-pill">0人</span>
+                </div>
+                <span class="swipe-hint">向右滑查看更多 👉</span>
+              </div>
+              <div id="othersColumnsScroll" class="others-horizontal-scroll">
+                <!-- 动态渲染每个好友的一列 -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 下半区：最终清单 (汇总去重全览，手绘下半部分) -->
+          <div class="lower-summary-section">
+            <div class="summary-header">
+              <div class="summary-title-wrap">
+                <span class="section-title">最终清单</span>
+                <span class="sub-hint">（全员物资汇总结算）</span>
+              </div>
+              <div class="summary-stats">
+                <span id="summaryDuplicateStats" class="duplicate-tag-stat">⚠️ 0 项重复</span>
+                <span id="summaryTotalStats" class="total-tag-stat">共 0 项</span>
+              </div>
+            </div>
+
+            <!-- 最终清单网格平铺卡片 -->
+            <div id="summaryItemsGrid" class="summary-grid">
+              <!-- 动态渲染聚合后的物资卡片 -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 2: 推荐库 (露营模板，解决漏带痛点) -->
+        <section id="viewRecommend" class="tab-view">
+          <div class="recommend-page-header">
+            <div class="rec-title-wrap">
+              <h2>🏕️ 露营推荐物资库</h2>
+              <p>分类挑选必备好物，点击直接加进“我的清单”</p>
+            </div>
+            <!-- 批量导入快捷条 -->
+            <div class="batch-bar">
+              <span id="selectedRecCount">已选 0 项</span>
+              <button id="btnBatchImport" class="btn-primary-sm" disabled>加入我的清单</button>
+            </div>
+          </div>
+
+          <!-- 分类标签栏 -->
+          <div id="recommendCatTabs" class="category-tabs">
+            <!-- 动态分类 Tab -->
+          </div>
+
+          <!-- 推荐物品列表 -->
+          <div id="recommendList" class="recommend-list-container">
+            <!-- 动态渲染推荐物资 -->
+          </div>
+        </section>
+
+        <!-- Tab 3: 清单核对 (Checklist 打钩清点) -->
+        <section id="viewChecklist" class="tab-view">
+          <div class="checklist-page-header">
+            <div class="checklist-stats-card">
+              <div class="stats-text-group">
+                <h2>出发装车清点</h2>
+                <p id="checkProgressText">已准备 0 / 0 项 (0%)</p>
+              </div>
+              <div class="progress-ring-wrap">
+                <div class="progress-bar-bg">
+                  <div id="checkProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 用户分类标签栏 (按用户分类，默认显示自己，展示 (4/5) 统计) -->
+          <div class="checklist-user-tabs-wrap">
+            <div id="checklistUserTabs" class="category-tabs checklist-user-tabs">
+              <!-- 动态渲染每个用户的分类标签 -->
+            </div>
+          </div>
+
+          <!-- 核对分组列表 -->
+          <div id="checklistItemsContainer" class="checklist-scroll-container">
+            <!-- 动态渲染待准备与已准备分组 -->
+          </div>
+        </section>
+
+        <!-- Tab 4: 我的 (个人信息、房间切换、测试切换) -->
+        <section id="viewProfile" class="tab-view">
+          <div class="profile-container">
+            <!-- 个人名片 -->
+            <div class="user-card">
+              <div class="user-avatar-large" id="profileAvatar">🏕️</div>
+              <div class="user-info">
+                <div class="user-nickname-row">
+                  <h3 id="profileNickname">未登录</h3>
+                  <button id="btnEditNickname" class="btn-edit-nickname" title="修改全局默认昵称">✏️ 改全局昵称</button>
+                </div>
+                <p id="profilePhone">用户名: -</p>
+              </div>
+              <button id="btnLogout" class="btn-text-danger">退出</button>
+            </div>
+
+            <!-- 活动管理板块 -->
+            <div class="card-section">
+              <div class="section-top">
+                <h4>我参与的活动</h4>
+                <div class="room-action-btns">
+                  <button id="btnOpenCreateRoomModal" class="btn-create-room-accent">+ 新建活动</button>
+                  <button id="btnOpenJoinRoomModal" class="btn-outline-sm">输入码加入</button>
+                </div>
+              </div>
+
+              <!-- 活动分类 Tab：进行中 / 已归档 -->
+              <div class="room-filter-tabs">
+                <button class="room-filter-tab active" data-filter="active">进行中 <span id="activeRoomsCount" class="tab-badge">0</span></button>
+                <button class="room-filter-tab" data-filter="archived">已归档 <span id="archivedRoomsCount" class="tab-badge">0</span></button>
+              </div>
+
+              <div id="myRoomsList" class="my-rooms-list">
+                <!-- 动态活动列表 -->
+              </div>
+            </div>
+
+            <!-- 版本与提示 -->
+            <div class="app-about">
+              <p>露营物资助手 v3.1 · 手机端自适应网页</p>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- 3. 底部导航栏 (四栏设计) -->
+      <nav class="bottom-tabbar">
+        <button class="tab-item active" data-tab="viewHome">
+          <span class="tab-icon">📋</span>
+          <span class="tab-label">首页</span>
+        </button>
+        <button class="tab-item" data-tab="viewRecommend">
+          <span class="tab-icon">💡</span>
+          <span class="tab-label">推荐库</span>
+        </button>
+        <button class="tab-item" data-tab="viewChecklist">
+          <span class="tab-icon">✅</span>
+          <span class="tab-label">清单核对</span>
+        </button>
+        <button class="tab-item" data-tab="viewProfile">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">我的</span>
+        </button>
+      </nav>
+
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 1: 编辑/删除物资弹窗 (针对手机端防误触、操作人性化设计) -->
+  <div id="itemActionModal" class="modal-backdrop hidden">
+    <div class="action-sheet-bottom">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">编辑我的物资</div>
+      <div class="sheet-body">
+        <label>物资名称</label>
+        <input type="text" id="modalEditName" class="form-input" placeholder="输入名称...">
+        
+        <label>准备数量</label>
+        <div class="quantity-stepper">
+          <button id="modalBtnMinus" class="btn-step">-</button>
+          <input type="number" id="modalEditQuantity" value="1" min="1" max="99" class="qty-input">
+          <button id="modalBtnPlus" class="btn-step">+</button>
+        </div>
+      </div>
+      <div class="sheet-actions">
+        <button id="modalBtnDelete" class="btn-danger">🗑️ 删除此物资</button>
+        <button id="modalBtnSave" class="btn-primary">保存修改</button>
+      </div>
+      <button id="modalBtnCancel" class="btn-cancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 2: 查看汇总物资的准备明细 (看是谁带了、谁重复) -->
+  <div id="summaryDetailModal" class="modal-backdrop hidden">
+    <div class="action-sheet-bottom">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <h3 id="summaryDetailName">羊肉串</h3>
+        <span id="summaryDetailTag" class="tag-duplicate">重复准备</span>
+      </div>
+      <div id="summaryDetailVariantsBanner" class="summary-detail-variants-banner hidden"></div>
+      <div class="contributors-list-title">准备此物资的朋友：</div>
+      <div id="summaryContributorsList" class="contributors-list">
+        <!-- 动态人员列表 -->
+      </div>
+      <button id="modalBtnCloseDetail" class="btn-primary-full">知道了</button>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 3: 登录/注册 Modal -->
+  <div id="authModal" class="modal-backdrop center-modal hidden">
+    <div class="modal-card">
+      <div class="auth-header">
+        <div class="auth-logo">🏕️</div>
+        <h3 id="authTitle">用户名登录 / 注册</h3>
+        <p class="auth-sub">用户名支持6~12位字符，密码为6~8位纯数字</p>
+        <div id="authInviteHint" class="auth-invite-banner hidden"></div>
+      </div>
+      <form id="authForm" class="auth-form">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="authPhone" class="form-input" placeholder="请输入6~12位用户名" maxlength="12" required>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="authPassword" class="form-input" placeholder="6~8位纯数字密码" maxlength="8" inputmode="numeric" required>
+        </div>
+        <div class="form-group hidden" id="groupNickname">
+          <label>用户昵称 <span style="color:#EF4444; font-weight:bold;">* (必填)</span></label>
+          <input type="text" id="authNickname" class="form-input" placeholder="输入昵称（最多8字），将作为用户名在列表中显示" maxlength="8">
+        </div>
+        <div id="authErrorMsg" class="form-error hidden"></div>
+        <button type="submit" id="btnAuthSubmit" class="btn-primary-full">立即登录</button>
+        <div class="auth-toggle-row">
+          <span id="authToggleHint">还没有账号？</span>
+          <a href="javascript:void(0)" id="btnToggleAuthMode">切换为注册</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 4: 创建活动 / 加入活动 Modal (美化统一UI) -->
+  <div id="roomModal" class="modal-backdrop center-modal hidden">
+    <div class="modal-card">
+      <div class="auth-header">
+        <div class="auth-logo" id="roomModalLogo">🏕️</div>
+        <h3 id="roomModalTitle">新建露营活动</h3>
+        <p class="auth-sub" id="roomModalSub">发起新的聚会活动，邀请朋友一起挑选和准备物资</p>
+      </div>
+
+      <!-- 创建活动表单 -->
+      <form id="formCreateRoom" class="auth-form" onsubmit="return false;">
+        <div id="createRoomSection" class="room-modal-body">
+          <div class="form-group">
+            <label>活动名称</label>
+            <input type="text" id="inputNewRoomTitle" class="form-input" placeholder="如：仙居山谷露营、五一海边烧烤" maxlength="25" autocomplete="off">
+          </div>
+          <div id="createRoomError" class="form-error hidden"></div>
+          <div class="modal-dialog-buttons">
+            <button type="button" class="btn-dialog-cancel btnCloseRoomModal" id="btnCancelCreateRoom">取消</button>
+            <button type="submit" id="btnSubmitCreateRoom" class="btn-dialog-submit">创建活动</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- 加入活动表单 -->
+      <form id="formJoinRoom" class="auth-form" onsubmit="return false;">
+        <div id="joinRoomSection" class="room-modal-body hidden">
+          <div class="form-group">
+            <label>6位纯数字邀请码</label>
+            <input type="text" id="inputJoinRoomCode" class="form-input text-center text-code" placeholder="如 893215" maxlength="6" inputmode="numeric" autocomplete="off">
+          </div>
+          <div id="joinRoomError" class="form-error hidden"></div>
+          <div class="modal-dialog-buttons">
+            <button type="button" class="btn-dialog-cancel btnCloseRoomModal" id="btnCancelJoinRoom">取消</button>
+            <button type="submit" id="btnSubmitJoinRoom" class="btn-dialog-submit">加入活动</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 5: 微信/网页专属邀请卡片与免输码一键直达 -->
+  <div id="shareModal" class="modal-backdrop center-modal hidden">
+    <div class="share-modal-card">
+      <div class="share-card-header">
+        <div class="share-card-title-row">
+          <h3>📤 邀请好友协同</h3>
+          <button id="btnCloseShareModal" class="modal-close-icon">×</button>
+        </div>
+        <p class="share-card-subtitle">专属直达链接 · 朋友点开免输码自动进房</p>
+      </div>
+
+      <!-- 精美露营邀请函卡片 -->
+      <div class="share-preview-poster">
+        <div class="poster-decor-badge">🏕️ 露营物资助手 · 协同选品</div>
+        <h4 id="shareCardRoomTitle" class="poster-room-title">仙居山谷周末露营</h4>
+        <div class="poster-inviter-info">
+          <span id="shareCardInviter">小明</span> 邀请你一起准备物资清单
+        </div>
+        
+        <!-- 专属6位码展示 -->
+        <div class="poster-code-row">
+          <span class="poster-code-label">专属邀请码</span>
+          <span id="shareCardRoomCode" class="poster-code-digits">893215</span>
+        </div>
+
+        <!-- 二维码与扫码提示 (现场面对面扫码秒进) -->
+        <div class="poster-qr-wrapper">
+          <canvas id="shareQrCanvas" width="130" height="130"></canvas>
+          <span class="poster-qr-tip">微信扫一扫 · 秒进活动</span>
+        </div>
+      </div>
+
+      <!-- 专属直达链接复制栏 -->
+      <div class="share-link-box">
+        <div class="share-link-label">专属直达链接（点开免输邀请码）：</div>
+        <div class="share-link-input-row">
+          <input type="text" id="inputShareDirectUrl" readonly class="share-link-input">
+          <button id="btnCopyShareDirectUrl" class="btn-copy-link">复制链接</button>
+        </div>
+      </div>
+
+      <!-- 分享快捷操作按钮组 -->
+      <div class="share-actions-group">
+        <button id="btnCopyCompleteInvite" class="btn-share-primary">
+          📋 复制完整微信邀请卡片（发微信群/好友）
+        </button>
+        <button id="btnNativeShare" class="btn-share-outline hidden">
+          📲 唤起系统/微信一键分享
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 6: 修改用户全局默认昵称 Modal -->
+  <div id="editNicknameModal" class="modal-backdrop center-modal hidden">
+    <div class="modal-card">
+      <div class="auth-header">
+        <div class="auth-logo">✏️</div>
+        <h3>修改全局默认昵称</h3>
+        <p class="auth-sub">设置全局通用昵称，新参与的活动将默认展示此昵称</p>
+      </div>
+      <form id="editNicknameForm" class="auth-form">
+        <div class="form-group">
+          <label>全局默认昵称（1~8字符）</label>
+          <input type="text" id="inputEditNickname" class="form-input" placeholder="输入新的昵称（最多8字）" maxlength="8" required>
+        </div>
+        <div id="editNicknameError" class="form-error hidden"></div>
+        <div class="modal-dialog-buttons">
+          <button type="button" id="btnCancelEditNickname" class="btn-dialog-cancel">取消</button>
+          <button type="submit" id="btnSaveNickname" class="btn-dialog-submit">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 7: 修改本活动专属昵称 Modal -->
+  <div id="editRoomNicknameModal" class="modal-backdrop center-modal hidden">
+    <div class="modal-card">
+      <div class="auth-header">
+        <div class="auth-logo">🏷️</div>
+        <h3>修改本活动专属昵称</h3>
+        <p class="auth-sub">专属昵称仅在此活动内展示（留空则恢复使用全局默认昵称）</p>
+      </div>
+      <form id="editRoomNicknameForm" class="auth-form">
+        <div class="form-group">
+          <label>活动专属昵称（最多8字）</label>
+          <input type="text" id="inputEditRoomNickname" class="form-input" placeholder="留空则恢复使用全局默认昵称" maxlength="8">
+        </div>
+        <div id="editRoomNicknameError" class="form-error hidden"></div>
+        <div class="modal-dialog-buttons">
+          <button type="button" id="btnCancelEditRoomNickname" class="btn-dialog-cancel">取消</button>
+          <button type="submit" id="btnSaveRoomNickname" class="btn-dialog-submit">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 浮层弹窗 8: 修改活动名称 Modal (仅活动创建者) -->
+  <div id="editRoomTitleModal" class="modal-backdrop center-modal hidden">
+    <div class="modal-card">
+      <div class="auth-header">
+        <div class="auth-logo">🏕️</div>
+        <h3>修改活动名称</h3>
+        <p class="auth-sub">仅活动创建者可修改活动名称（最多25字）</p>
+      </div>
+      <form id="editRoomTitleForm" class="auth-form">
+        <div class="form-group">
+          <label>活动名称</label>
+          <input type="text" id="inputEditRoomTitle" class="form-input" placeholder="输入新的活动名称" maxlength="25" required>
+        </div>
+        <div id="editRoomTitleError" class="form-error hidden"></div>
+        <div class="modal-dialog-buttons">
+          <button type="button" id="btnCancelEditRoomTitle" class="btn-dialog-cancel">取消</button>
+          <button type="submit" id="btnSaveRoomTitle" class="btn-dialog-submit">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast 提示消息 -->
+  <div id="toast" class="toast-box hidden"></div>
+
+  <!-- 脚本引入 -->
+  <script src="/js/qrious.min.js"></script>
+  <script src="/js/api.js?v=3.6"></script>
+  <script src="/js/app.js?v=3.6"></script>
+</body>
+</html>

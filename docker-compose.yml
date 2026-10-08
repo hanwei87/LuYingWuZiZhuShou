@@ -1,0 +1,25 @@
+services:
+  dajia-yiqi-xuan:
+    container_name: dajia-yiqi-xuan
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dajia-yiqi-xuan:latest
+    restart: unless-stopped
+    ports:
+      # 外部访问端口 : 容器内部端口（若飞牛OS上3000端口已被占用，可修改为如 "8088:3000"）
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - PUBLIC_URL=http://luying.22182214.xyz
+      - NODE_ENV=production
+      - TZ=Asia/Shanghai
+    volumes:
+      # 1. 前端静态资源目录热挂载：HTML/CSS/JS 随时覆盖修改，电脑/手机刷新即看最新效果
+      - ./public:/app/public
+      # 2. 服务端代码热挂载：覆盖修改 server/ 内的代码，Node 自动热重载，无需手动重启容器
+      - ./server:/app/server
+      # 3. SQLite 数据持久化目录：dajia.db 文件保存在飞牛OS宿主机，容器升级重建数据不丢失
+      - ./data:/app/data
+      # 4. 容器依赖隔离匿名卷：避免宿主机若存在 node_modules 造成不同系统的依赖冲突
+      - /app/node_modules

@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log*
+.DS_Store
+.git
+.gemini
+data/*.db-journal
+docs/

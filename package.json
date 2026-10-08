@@ -1,0 +1,14 @@
+{
+  "name": "dajia-yiqi-xuan",
+  "version": "1.0.0",
+  "description": "大家一起选 - 露营聚会多人协作选品与清单查重应用",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "node --watch-path=server server/index.js",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  }
+}

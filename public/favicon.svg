@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 背景渐变：森林绿到翡翠深绿 (同露营物资助手 App 品牌色系) -->
+    <linearGradient id="bgGrad" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#064E3B"/>
+    </linearGradient>
+
+    <!-- 顶端微光泽高光边框 -->
+    <linearGradient id="rimGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.38"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 帐篷各面多维质感材质 -->
+    <!-- 1. 左侧主受光面 (柔和纯白) -->
+    <linearGradient id="tentMainLeft" x1="30%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <!-- 2. 右侧主背光面 (立体微冷灰) -->
+    <linearGradient id="tentMainRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1F5F9"/>
+      <stop offset="50%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+
+    <!-- 3. 左翼折叠面 -->
+    <linearGradient id="tentFlapLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+
+    <!-- 4. 右翼折叠面 (深阴影) -->
+    <linearGradient id="tentFlapRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+
+    <!-- 帐篷内暖金篝火辉光 -->
+    <radialGradient id="interiorFireGlow" cx="50%" cy="80%" r="68%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="35%" stop-color="#F59E0B"/>
+      <stop offset="70%" stop-color="#B45309"/>
+      <stop offset="95%" stop-color="#1E293B"/>
+    </radialGradient>
+
+    <!-- 篝火主火苗渐变 -->
+    <linearGradient id="flameMain" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#DC2626"/>
+    </linearGradient>
+
+    <!-- 核心活力对勾渐变 (阳光暖金 -> 活力甜橙) -->
+    <linearGradient id="checkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="45%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+
+    <!-- 滤镜：帐篷整体柔和落地投影 -->
+    <filter id="softTentShadow" x="-20%" y="-15%" width="140%" height="135%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#02281D" flood-opacity="0.38"/>
+    </filter>
+
+    <!-- 滤镜：对勾高光立体落影 -->
+    <filter id="checkGlowShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#02281D" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Squircle 图标背景容器 (超椭圆倒角) -->
+  <rect width="512" height="512" rx="118" fill="url(#bgGrad)"/>
+  <rect x="5" y="5" width="502" height="502" rx="114" fill="none" stroke="url(#rimGlow)" stroke-width="3"/>
+
+  <!-- 2. 夜空露营星芒 -->
+  <!-- 左上星芒 1 -->
+  <path d="M 160 148 Q 170 148 170 138 Q 170 148 180 148 Q 170 148 170 158 Q 170 148 160 148 Z" fill="#FDE68A" opacity="0.95"/>
+  <!-- 左上主星芒 2 -->
+  <path d="M 194 102 Q 210 102 210 86 Q 210 102 226 102 Q 210 102 210 118 Q 210 102 194 102 Z" fill="#FEF08A"/>
+
+  <!-- 3. 自然柔和的营地草坪阴影 (羽化微落影) -->
+  <ellipse cx="256" cy="405" rx="160" ry="18" fill="#02231A" opacity="0.35"/>
+
+  <!-- 4. 核心露营美学帐篷 (Bell Tent) -->
+  <g filter="url(#softTentShadow)">
+    <!-- 帐篷左侧翼面 -->
+    <path d="M 256 114 L 102 360 L 152 396 L 256 240 Z" fill="url(#tentFlapLeft)"/>
+
+    <!-- 帐篷左主面 (高光纯白) -->
+    <path d="M 256 114 L 152 396 L 256 396 L 256 240 Z" fill="url(#tentMainLeft)"/>
+
+    <!-- 帐篷右主面 (立体浅灰) -->
+    <path d="M 256 114 L 256 240 L 256 396 L 360 396 Z" fill="url(#tentMainRight)"/>
+
+    <!-- 帐篷右侧翼面 (立体阴影) -->
+    <path d="M 256 114 L 256 240 L 360 396 L 410 360 Z" fill="url(#tentFlapRight)"/>
+
+    <!-- 帐篷顶端营绳结点 -->
+    <circle cx="256" cy="114" r="7" fill="#F8FAFC"/>
+    <circle cx="256" cy="114" r="4" fill="#F59E0B"/>
+
+    <!-- 帐篷拱形门厅 (温暖营火光晕) -->
+    <path d="M 195 396 Q 256 248 256 248 Q 256 248 317 396 Z" fill="url(#interiorFireGlow)"/>
+
+    <!-- 柴火底架 (交叉木柴) -->
+    <rect x="234" y="378" width="44" height="6" rx="3" fill="#78350F" transform="rotate(-15 256 381)"/>
+    <rect x="234" y="378" width="44" height="6" rx="3" fill="#92400E" transform="rotate(15 256 381)"/>
+
+    <!-- 帐篷内部篝火主火苗 -->
+    <path d="M 256 322 C 248 340 238 350 238 364 C 238 377 246 384 256 384 C 266 384 274 377 274 364 C 274 350 264 340 256 322 Z" fill="url(#flameMain)"/>
+    <!-- 火苗金黄内核 -->
+    <ellipse cx="256" cy="372" rx="7" ry="10" fill="#FEF08A"/>
+
+    <!-- 门帘向两侧卷起的立体布料褶皱 -->
+    <path d="M 195 396 L 214 345 L 228 396 Z" fill="#F1F5F9" opacity="0.95"/>
+    <path d="M 317 396 L 298 345 L 284 396 Z" fill="#CBD5E1" opacity="0.95"/>
+  </g>
+
+  <!-- 5. 核心选品就绪对勾 (Checkmark: 象征清单核对完成、协作无误、露营就绪) -->
+  <g filter="url(#checkGlowShadow)">
+    <path d="M 276 342 
+             L 326 392 
+             C 334 400 346 400 354 392 
+             L 448 270 
+             C 455 261 454 247 444 240 
+             C 435 233 421 234 414 244 
+             L 340 342 
+             L 306 308 
+             C 298 300 285 300 277 308 
+             C 269 316 268 333 276 342 Z" 
+          fill="url(#checkGradient)"/>
+
+    <!-- 对勾高光导光流线 -->
+    <path d="M 308 314 L 340 346 L 434 248" 
+          stroke="#FFFFFF" 
+          stroke-width="5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          stroke-opacity="0.5" 
+          fill="none"/>
+  </g>
+</svg>
